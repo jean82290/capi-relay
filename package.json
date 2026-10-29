@@ -1,0 +1,27 @@
+{
+  "name": "capi-relay",
+  "version": "1.0.0",
+  "description": "Self-hosted, consent-first server-side tracking relay for Facebook & Instagram ads (Conversions API). Not affiliated with Meta.",
+  "type": "module",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "test": "node --test --test-concurrency=1 test/*.test.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "license": "MIT",
+  "keywords": [
+    "conversions-api",
+    "capi",
+    "server-side-tracking",
+    "facebook-ads",
+    "instagram-ads",
+    "gdpr",
+    "railway"
+  ],
+  "dependencies": {
+    "pg": "^8.13.1"
+  }
+}
