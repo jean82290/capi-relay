@@ -31,11 +31,13 @@ export function createWorker({ db, config, fetchImpl, log = console }) {
       return;
     }
     if (result.kind === 'config') {
+      log.error?.(`[worker] Meta refused the configuration, ${ids.length} event(s) kept for retry in 10 min: ${result.message}`);
       await db.setState('config_error', result.message);
       await db.markRetry(ids, result.message, CONFIG_RETRY_SECONDS);
       return 'config';
     }
     if (result.kind === 'retry') {
+      log.error?.(`[worker] temporary delivery problem, ${ids.length} event(s) will be retried: ${result.message}`);
       const retry = rows.filter((r) => r.attempts + 1 < MAX_ATTEMPTS);
       const giveUp = rows.filter((r) => r.attempts + 1 >= MAX_ATTEMPTS);
       for (const r of retry) await db.markRetry([r.id], result.message, backoffSeconds(r.attempts + 1));
@@ -44,6 +46,7 @@ export function createWorker({ db, config, fetchImpl, log = console }) {
     }
     // invalid
     if (rows.length === 1) {
+      log.error?.(`[worker] Meta rejected a ${rows[0].payload.event_name} event: ${result.message}`);
       await db.markFailed(ids, result.message);
       await db.bump('rejected', 1);
       return;
