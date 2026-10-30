@@ -1,0 +1,258 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CAPI Relay — Consent-first server-side tracking for Facebook &amp; Instagram ads</title>
+<meta name="description" content="Self-hosted, open-source relay for the Meta Conversions API. Consent enforced, data hashed on arrival, retries and deduplication built in. One-click deploy on Railway.">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<style>
+  :root {
+    --bg: #f7f6f3; --panel: #ffffff; --ink: #1b1a18; --muted: #67645e; --line: #e5e2da;
+    --accent: #2f5bea; --accent-ink: #ffffff; --soft: #eef2fd; --code: #f1efe9; --ok: #1f7a4d;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #121211; --panel: #1b1b19; --ink: #eceae5; --muted: #a29f97; --line: #2d2c29;
+      --accent: #7b9cff; --accent-ink: #0d1224; --soft: #1a2140; --code: #23231f; --ok: #6fd3a0;
+    }
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.6 ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  a { color: var(--accent); }
+  .wrap { max-width: 920px; margin: 0 auto; padding: 0 20px; }
+  header.top { border-bottom: 1px solid var(--line); background: var(--panel); position: sticky; top: 0; z-index: 5; }
+  header.top .wrap { display: flex; align-items: center; justify-content: space-between; height: 58px; gap: 16px; }
+  .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; color: var(--ink); text-decoration: none; }
+  .brand img { width: 28px; height: 28px; }
+  nav a { color: var(--muted); text-decoration: none; margin-left: 18px; font-size: 14px; }
+  nav a:hover { color: var(--ink); }
+  @media (max-width: 640px) { nav { display: none; } }
+  .hero { padding: 64px 0 40px; }
+  .hero h1 { font-size: clamp(30px, 5vw, 44px); line-height: 1.15; letter-spacing: -0.02em; margin: 0 0 16px; }
+  .hero p.lead { font-size: 19px; color: var(--muted); max-width: 680px; margin: 0 0 28px; }
+  .cta { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+  .btn { display: inline-flex; align-items: center; gap: 8px; padding: 11px 18px; border-radius: 10px; font-weight: 600; text-decoration: none; font-size: 15px; }
+  .btn.primary { background: var(--accent); color: var(--accent-ink); }
+  .btn.ghost { border: 1px solid var(--line); color: var(--ink); background: var(--panel); }
+  .badges { margin-top: 22px; display: flex; gap: 8px; flex-wrap: wrap; }
+  .badge { font-size: 13px; padding: 4px 10px; border-radius: 999px; background: var(--soft); color: var(--accent); }
+  section { padding: 36px 0; border-top: 1px solid var(--line); }
+  h2 { font-size: 26px; letter-spacing: -0.01em; margin: 0 0 14px; }
+  h3 { font-size: 18px; margin: 26px 0 8px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; margin-top: 18px; }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 18px; }
+  .card h3 { margin: 0 0 6px; font-size: 16px; }
+  .card p { margin: 0; color: var(--muted); font-size: 15px; }
+  pre { background: var(--code); border-radius: 10px; padding: 14px 16px; overflow-x: auto; font-size: 13.5px; line-height: 1.5; position: relative; margin: 10px 0 16px; }
+  code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+  p code, li code, td code { background: var(--code); padding: 1px 6px; border-radius: 5px; font-size: 0.9em; }
+  .copy { position: absolute; top: 8px; right: 8px; font: 600 12px/1 inherit; padding: 6px 9px; border-radius: 7px; border: 1px solid var(--line); background: var(--panel); color: var(--muted); cursor: pointer; }
+  ol.steps { padding-left: 22px; }
+  ol.steps li { margin-bottom: 10px; }
+  table { width: 100%; border-collapse: collapse; font-size: 14.5px; margin-top: 10px; }
+  th, td { text-align: left; padding: 9px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { color: var(--muted); font-weight: 500; }
+  .scroll { overflow-x: auto; }
+  .flow { display: flex; align-items: center; justify-content: center; gap: 10px; flex-wrap: wrap; margin: 20px 0 6px; font-size: 14px; }
+  .flow .node { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 10px 14px; text-align: center; min-width: 140px; }
+  .flow .node strong { display: block; }
+  .flow .node span { color: var(--muted); font-size: 13px; }
+  .flow .arrow { color: var(--muted); font-size: 20px; }
+  .flow .node.main { border-color: var(--accent); background: var(--soft); }
+  .note { background: var(--panel); border-left: 3px solid var(--accent); padding: 12px 16px; border-radius: 6px; color: var(--muted); font-size: 15px; }
+  details { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 12px 16px; margin-bottom: 10px; }
+  summary { cursor: pointer; font-weight: 600; }
+  details p { color: var(--muted); margin: 10px 0 0; }
+  footer { border-top: 1px solid var(--line); padding: 28px 0 48px; color: var(--muted); font-size: 13.5px; }
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="#"><img src="icon.svg" alt="">CAPI Relay</a>
+    <nav>
+      <a href="#quick-start">Quick start</a>
+      <a href="#website">Website</a>
+      <a href="#server-api">Server API</a>
+      <a href="#configuration">Configuration</a>
+      <a href="#privacy">Privacy</a>
+      <a href="https://github.com/jean82290/capi-relay">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="hero">
+    <h1>Server-side tracking for Facebook &amp; Instagram ads, with consent built in.</h1>
+    <p class="lead">CAPI Relay is a small, open-source service that sends your website's conversions to the Meta Conversions API from your own server. It enforces consent, hashes personal data on arrival, deduplicates against the browser Pixel and retries failed deliveries. One service, one Postgres database, no Google Tag Manager.</p>
+    <div class="cta">
+      <a class="btn primary" href="https://railway.com/deploy/xSo6oY?referralCode=NamAm4&amp;utm_medium=integration&amp;utm_source=docs&amp;utm_campaign=capi-relay">Deploy on Railway</a>
+      <a class="btn ghost" href="https://github.com/jean82290/capi-relay">View source on GitHub</a>
+    </div>
+    <div class="badges">
+      <span class="badge">MIT licensed</span>
+      <span class="badge">Consent-first</span>
+      <span class="badge">SHA-256 hashing</span>
+      <span class="badge">Retries &amp; dedup</span>
+      <span class="badge">1 dependency</span>
+    </div>
+  </div>
+
+  <section id="why">
+    <h2>Why server-side?</h2>
+    <p>Browser pixels miss conversions: ad blockers, Safari's tracking limits and closed tabs all drop events before they reach Meta. Meta recommends sending the same events from a server through the Conversions API, with a shared <code>event_id</code> so each conversion is counted once. CAPI Relay is that server, ready to deploy.</p>
+    <div class="flow" aria-label="How events flow">
+      <div class="node"><strong>Your website</strong><span>Pixel + capi.js</span></div>
+      <div class="arrow">→</div>
+      <div class="node main"><strong>CAPI Relay</strong><span>consent · hashing · queue</span></div>
+      <div class="arrow">→</div>
+      <div class="node"><strong>Conversions API</strong><span>Meta</span></div>
+    </div>
+    <p style="text-align:center;color:var(--muted);font-size:14px;margin:4px 0 0;">Your backend can also send events directly with <code>POST /v1/events</code>.</p>
+
+    <div class="grid">
+      <div class="card"><h3>Consent is enforced</h3><p>Nothing leaves the browser until your cookie banner grants consent. Events without consent are dropped and never stored.</p></div>
+      <div class="card"><h3>Data hashed on arrival</h3><p>Emails, phones, names and addresses are normalized and SHA-256 hashed following Meta's rules before touching the database.</p></div>
+      <div class="card"><h3>Reliable delivery</h3><p>Durable Postgres queue, exponential backoff, invalid events isolated so they never block a batch, 7-day expiry.</p></div>
+      <div class="card"><h3>Counted once</h3><p>The browser helper fires the Pixel and the relay with the same event ID; repeated event IDs are ignored.</p></div>
+      <div class="card"><h3>A dashboard that explains</h3><p>Delivery rate, queue, failures with Meta's own error messages, setup checklist and a one-click test event.</p></div>
+      <div class="card"><h3>Short retention</h3><p>Stored events are deleted after 7 days by default. Only hashed contact data is ever kept.</p></div>
+    </div>
+  </section>
+
+  <section id="quick-start">
+    <h2>Quick start</h2>
+    <ol class="steps">
+      <li><strong>Get your IDs from Meta.</strong> In Events Manager, open your dataset (Pixel), then <em>Settings</em>. Copy the dataset ID. Under <em>Conversions API</em>, click <em>Generate access token</em>. No app review is needed.</li>
+      <li><strong>Deploy the template</strong> and fill in <code>META_PIXEL_ID</code>, <code>META_ACCESS_TOKEN</code> and <code>ALLOWED_ORIGINS</code> (your site, for example <code>https://www.myshop.com</code>). The dashboard password and API key are generated for you.</li>
+      <li><strong>Add a custom domain</strong> on the service, such as <code>t.myshop.com</code> (Railway → service → Settings → Networking). On a subdomain of your site, the browser sends the Pixel's <code>_fbp</code>/<code>_fbc</code> cookies to the relay, which improves matching.</li>
+      <li><strong>Add the snippet</strong> below to your site and connect it to your cookie banner.</li>
+      <li><strong>Test.</strong> Set <code>META_TEST_EVENT_CODE</code> to the code shown in Events Manager → <em>Test events</em>, open <code>https://t.myshop.com/admin</code> (any username, password = <code>ADMIN_PASSWORD</code>) and press <em>Send a test event</em>. Remove the variable when you go live.</li>
+    </ol>
+  </section>
+
+  <section id="website">
+    <h2>Website snippet</h2>
+    <p>Load it after your Meta Pixel (which should itself only load after consent):</p>
+<pre><code>&lt;script&gt;
+  window.capi = window.capi || function () { (capi.q = capi.q || []).push(arguments) };
+&lt;/script&gt;
+&lt;script async src="https://t.myshop.com/capi.js"&gt;&lt;/script&gt;</code></pre>
+    <p>From your cookie banner's callback, when the visitor accepts marketing cookies:</p>
+<pre><code>capi('consent', true);   // and capi('consent', false) if they withdraw it</code></pre>
+    <p>Then send events with <code>capi('track', …)</code> instead of <code>fbq('track', …)</code>. It fires the Pixel and the relay with the same event ID:</p>
+<pre><code>capi('track', 'ViewContent', { content_ids: ['sku-42'], content_type: 'product' });
+
+capi('track', 'Purchase',
+  { value: 49.90, currency: 'EUR', order_id: '1042' },
+  { userData: { em: 'jane@example.com', ph: '06 12 34 56 78' }, eventId: 'order-1042' });</code></pre>
+    <div class="scroll"><table>
+      <tr><th>Call</th><th>Effect</th></tr>
+      <tr><td><code>capi('consent', true | false)</code></td><td>Grants or withdraws consent. Default: not granted.</td></tr>
+      <tr><td><code>capi('track', name, customData?, options?)</code></td><td>Sends an event and returns its <code>event_id</code>. Options: <code>userData</code>, <code>eventId</code>, <code>pixel: false</code>.</td></tr>
+      <tr><td><code>capi('config', { pixel: false })</code></td><td>Never call <code>fbq</code> (if you fire the Pixel yourself with the same <code>eventID</code>).</td></tr>
+    </table></div>
+    <p class="note">The helper never sets cookies. It reads the <code>_fbp</code> and <code>_fbc</code> cookies created by the Pixel, and builds <code>fbc</code> from an <code>fbclid</code> URL parameter when needed.</p>
+  </section>
+
+  <section id="server-api">
+    <h2>Server API</h2>
+    <p>Send events from your backend: order confirmations, CRM updates, offline sales. Up to 500 events per request.</p>
+<pre><code>curl -X POST https://t.myshop.com/v1/events \
+  -H "Authorization: Bearer $API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "events": [{
+      "event_name": "Purchase",
+      "event_id": "order-1042",
+      "consent": true,
+      "event_source_url": "https://www.myshop.com/checkout",
+      "user_data": {
+        "em": "jane@example.com",
+        "client_ip_address": "203.0.113.7",
+        "client_user_agent": "Mozilla/5.0 …"
+      },
+      "custom_data": { "value": 49.90, "currency": "EUR" }
+    }]
+  }'</code></pre>
+    <p>Response: <code>{"accepted": 1, "duplicates": 0, "skipped_no_consent": 0, "errors": []}</code></p>
+    <ul>
+      <li><code>consent</code> must be <code>true</code> for each event: you confirm the person consented.</li>
+      <li><code>action_source</code> defaults to <code>website</code>; other Meta values (<code>system_generated</code>, <code>physical_store</code>, <code>email</code>…) are accepted. Website events need <code>event_source_url</code>.</li>
+      <li><code>event_time</code> (Unix seconds) is optional and must be within the last 7 days.</li>
+      <li>Values already hashed with SHA-256 are passed through unchanged.</li>
+    </ul>
+
+    <h3>Endpoints</h3>
+    <div class="scroll"><table>
+      <tr><th>Path</th><th>Purpose</th></tr>
+      <tr><td><code>GET /capi.js</code></td><td>Browser helper</td></tr>
+      <tr><td><code>POST /e</code></td><td>Browser events (CORS-restricted to <code>ALLOWED_ORIGINS</code>, rate-limited)</td></tr>
+      <tr><td><code>POST /v1/events</code></td><td>Server events (Bearer <code>API_KEY</code>)</td></tr>
+      <tr><td><code>GET /admin</code></td><td>Dashboard (HTTP basic auth, password <code>ADMIN_PASSWORD</code>)</td></tr>
+      <tr><td><code>GET /healthz</code></td><td>Health check</td></tr>
+    </table></div>
+  </section>
+
+  <section id="configuration">
+    <h2>Configuration</h2>
+    <div class="scroll"><table>
+      <tr><th>Variable</th><th>Required</th><th>Default</th><th>Description</th></tr>
+      <tr><td><code>META_PIXEL_ID</code></td><td>yes</td><td></td><td>Dataset / Pixel ID from Events Manager.</td></tr>
+      <tr><td><code>META_ACCESS_TOKEN</code></td><td>yes</td><td></td><td>Conversions API access token from Events Manager.</td></tr>
+      <tr><td><code>ALLOWED_ORIGINS</code></td><td>yes</td><td></td><td>Comma-separated sites allowed to send browser events.</td></tr>
+      <tr><td><code>DATABASE_URL</code></td><td>yes</td><td>set by the template</td><td>Postgres connection string (private network).</td></tr>
+      <tr><td><code>ADMIN_PASSWORD</code></td><td>yes</td><td>generated</td><td>Dashboard password.</td></tr>
+      <tr><td><code>API_KEY</code></td><td>server API</td><td>generated</td><td>Bearer key for <code>/v1/events</code>.</td></tr>
+      <tr><td><code>META_TEST_EVENT_CODE</code></td><td>no</td><td></td><td>Routes events to Events Manager → Test events.</td></tr>
+      <tr><td><code>REQUIRE_CONSENT</code></td><td>no</td><td><code>true</code></td><td>Set <code>false</code> only where the law does not require consent (not in the EU/UK).</td></tr>
+      <tr><td><code>RETENTION_DAYS</code></td><td>no</td><td><code>7</code></td><td>Days before stored events are deleted (1–90).</td></tr>
+      <tr><td><code>DEFAULT_PHONE_COUNTRY_CODE</code></td><td>no</td><td></td><td>Calling code added to national phone numbers, e.g. <code>33</code> for France.</td></tr>
+      <tr><td><code>META_API_VERSION</code></td><td>no</td><td><code>v26.0</code></td><td>Graph API version.</td></tr>
+    </table></div>
+  </section>
+
+  <section id="privacy">
+    <h2>Privacy and your responsibilities</h2>
+    <p>CAPI Relay runs on your own infrastructure; you are the controller of the data it processes. Under the GDPR and ePrivacy rules, server-side tracking does <strong>not</strong> remove the need for consent. Before going live:</p>
+    <ul>
+      <li>make sure your cookie banner calls <code>capi('consent', …)</code> and that your Meta Pixel only loads after consent;</li>
+      <li>mention Meta's Conversions API in your privacy policy;</li>
+      <li>respect Meta's Business Tools Terms (for example, do not send sensitive data such as health information).</li>
+    </ul>
+    <p><strong>Stored:</strong> the Meta-formatted event (hashed contact data, IP address, user agent, <code>fbp</code>/<code>fbc</code>, your <code>custom_data</code>), delivery status and Meta's error messages, for <code>RETENTION_DAYS</code> only. <strong>Never stored:</strong> events without consent, raw emails or phone numbers.</p>
+  </section>
+
+  <section id="faq">
+    <h2>FAQ</h2>
+    <details><summary>Do I need a Meta app or App Review?</summary><p>No. The Conversions API only needs a dataset (Pixel) ID and an access token generated in Events Manager.</p></details>
+    <details><summary>Will conversions be counted twice?</summary><p>No, as long as the browser and the server send the same event ID. The <code>capi('track')</code> helper does this for you, and the relay ignores repeated event IDs.</p></details>
+    <details><summary>Does it replace my cookie banner?</summary><p>No. It relies on your banner: call <code>capi('consent', true)</code> when the visitor accepts marketing cookies.</p></details>
+    <details><summary>What does it cost to run?</summary><p>One small Node.js service and a Postgres database on Railway, billed by usage. There are no per-event fees.</p></details>
+    <details><summary>How do I get help?</summary><p>Ask in the template's Railway Central Station thread or open an issue on <a href="https://github.com/jean82290/capi-relay/issues">GitHub</a>.</p></details>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    CAPI Relay is open source under the MIT license — <a href="https://github.com/jean82290/capi-relay">github.com/jean82290/capi-relay</a>.<br>
+    Not affiliated with, endorsed or sponsored by Meta Platforms, Inc. “Facebook” and “Instagram” are trademarks of Meta Platforms, Inc., used here only to describe compatibility.
+  </div>
+</footer>
+
+<script>
+  document.querySelectorAll('pre').forEach(function (pre) {
+    var b = document.createElement('button');
+    b.className = 'copy'; b.type = 'button'; b.textContent = 'Copy';
+    b.addEventListener('click', function () {
+      navigator.clipboard.writeText(pre.innerText.replace(/Copy$/, '').trim()).then(function () {
+        b.textContent = 'Copied'; setTimeout(function () { b.textContent = 'Copy'; }, 1500);
+      });
+    });
+    pre.appendChild(b);
+  });
+</script>
+</body>
+</html>
