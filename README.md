@@ -5,6 +5,8 @@ CAPI Relay receives your website's conversion events and forwards them to the Me
 
 > Not affiliated with, endorsed or sponsored by Meta Platforms, Inc. "Facebook" and "Instagram" are trademarks of Meta Platforms, Inc., used here only to describe compatibility.
 
+**Documentation:** https://jean82290.github.io/capi-relay/
+
 [![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/deploy/xSo6oY?referralCode=NamAm4&utm_medium=integration&utm_source=template&utm_campaign=generic)
 
 ## Why
