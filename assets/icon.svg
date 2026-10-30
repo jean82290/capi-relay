@@ -1,15 +1,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
-  <defs>
-    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#3b6cf5"/>
-      <stop offset="1" stop-color="#1c3fb8"/>
-    </linearGradient>
-  </defs>
-  <rect width="256" height="256" rx="56" fill="url(#g)"/>
-  <!-- browser dot, relay node, destination arrow -->
-  <circle cx="62" cy="128" r="18" fill="#ffffff" fill-opacity="0.55"/>
-  <path d="M80 128 H112" stroke="#ffffff" stroke-opacity="0.55" stroke-width="12" stroke-linecap="round"/>
-  <rect x="108" y="96" width="64" height="64" rx="16" fill="#ffffff"/>
-  <path d="M128 112 V144 M140 112 V144 M152 112 V144" stroke="#1c3fb8" stroke-width="7" stroke-linecap="round"/>
-  <path d="M172 128 H204 M188 110 L206 128 L188 146" fill="none" stroke="#ffffff" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Transparent background: browser dot, relay node, destination arrow -->
+  <circle cx="50" cy="128" r="22" fill="#2f5bea" fill-opacity="0.55"/>
+  <path d="M72 128 H104" stroke="#2f5bea" stroke-opacity="0.55" stroke-width="14" stroke-linecap="round"/>
+  <rect x="100" y="88" width="80" height="80" rx="20" fill="#2f5bea"/>
+  <path d="M124 108 V148 M140 108 V148 M156 108 V148" stroke="#ffffff" stroke-width="8" stroke-linecap="round"/>
+  <path d="M180 128 H222 M202 106 L224 128 L202 150" fill="none" stroke="#2f5bea" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>
